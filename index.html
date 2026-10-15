@@ -1,17 +1,590 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="presentacion.css">
-    <title>Document</title>
+    <title>Un Mensaje Misterioso...</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Creepster, Playfair Display e Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- FontAwesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        spooky: ['"Creepster"', 'cursive'],
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['"Inter"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Transición global para el cambio de tema */
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background 1.5s ease-in-out, color 1.5s ease-in-out;
+        }
+
+        /* Tema Tétrico Inicial */
+        body.theme-spooky {
+            background: radial-gradient(circle at center, #1a0b2e 0%, #090312 70%, #000000 100%);
+            color: #d1d5db;
+        }
+
+        /* Tema Romántico */
+        body.theme-romantic {
+            background: linear-gradient(135deg, #fff0f3 0%, #fae1dd 50%, #fcf6bd 100%);
+            color: #1f2937;
+        }
+
+        /* Efecto de niebla/bruma en modo tétrico */
+        .fog-container {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(circle, rgba(147, 51, 234, 0.08) 0%, transparent 70%);
+            transition: opacity 1.5s ease;
+        }
+
+        /* Animaciones para el Sobre */
+        .envelope-container {
+            perspective: 1000px;
+        }
+        
+        .envelope {
+            position: relative;
+            width: 320px;
+            height: 220px;
+            border-radius: 0 0 12px 12px;
+            cursor: pointer;
+            transition: transform 0.6s ease, background-color 1.5s ease, box-shadow 1.5s ease;
+        }
+
+        /* Sobre en versión tétrica */
+        .theme-spooky .envelope {
+            background: #181222;
+            border: 1px solid #3b0764;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(147, 51, 234, 0.3);
+        }
+
+        .theme-spooky .envelope:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.9), 0 0 25px rgba(168, 85, 247, 0.5);
+        }
+
+        /* Sobre en versión romántica */
+        .theme-romantic .envelope {
+            background: #fdf0ed;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            box-shadow: 0 15px 35px rgba(230, 57, 70, 0.2);
+        }
+
+        /* Flap (tapa) del sobre */
+        .envelope-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 160px solid transparent;
+            border-right: 160px solid transparent;
+            transform-origin: top;
+            transition: transform 0.6s ease 0.2s, border-color 1.5s ease, z-index 0.2s;
+            z-index: 30;
+        }
+
+        .theme-spooky .envelope-flap {
+            border-top: 120px solid #2a1b40;
+        }
+
+        .theme-romantic .envelope-flap {
+            border-top: 120px solid #e2bcb7;
+        }
+
+        .envelope.open .envelope-flap {
+            transform: rotateX(180deg);
+            z-index: 10;
+        }
+
+        /* Bolsillo del sobre */
+        .envelope-pocket {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 320px;
+            height: 220px;
+            border-left: 160px solid transparent;
+            border-right: 160px solid transparent;
+            border-radius: 0 0 12px 12px;
+            z-index: 20;
+            pointer-events: none;
+            transition: border-color 1.5s ease;
+        }
+
+        .theme-spooky .envelope-pocket {
+            border-bottom: 120px solid #1f1530;
+        }
+
+        .theme-romantic .envelope-pocket {
+            border-bottom: 120px solid #ecd4d0;
+        }
+
+        /* Partículas flotantes */
+        @keyframes floatUp {
+            0% {
+                transform: translateY(100vh) scale(0.5) rotate(0deg);
+                opacity: 0;
+            }
+            20% { opacity: 0.8; }
+            80% { opacity: 0.8; }
+            100% {
+                transform: translateY(-10vh) scale(1.2) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .floating-particle {
+            position: absolute;
+            animation: floatUp 6s linear infinite;
+            bottom: -20px;
+            user-select: none;
+            pointer-events: none;
+        }
+
+        /* Parpadeo misterioso en el texto tétrico */
+        @keyframes eerieFlicker {
+            0%, 100% { opacity: 1; text-shadow: 0 0 10px rgba(168, 85, 247, 0.6); }
+            50% { opacity: 0.5; text-shadow: 0 0 2px rgba(168, 85, 247, 0.2); }
+            70% { opacity: 0.8; text-shadow: 0 0 15px rgba(239, 68, 68, 0.8); }
+        }
+
+        .spooky-text {
+            animation: eerieFlicker 3s infinite;
+        }
+
+        /* Papel de la carta */
+        .letter-paper {
+            background: #fffcf9;
+            background-image: radial-gradient(#f7d9d9 0.75px, transparent 0.75px);
+            background-size: 16px 16px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        /* Gradiente para borde de historia / perfil de Instagram */
+        .ig-story-border {
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+        }
+    </style>
 </head>
-<body>
-    <font style="color:red ;"><center><h1>Programa de Dean Ambrose :D</h1></center></font>
-   <center><img src="dean.gif" alt=""></center>  <br>
-   <center><h1>Luchador profecional Butch un loco en la lucha libre</h1></center>
-    <center><img src="butch.jpg" alt=""></center>
+<body class="theme-spooky flex flex-col items-center justify-center min-h-screen p-4 relative">
+
+    <!-- Tu canción real -->
+    <audio id="cancionRomantica" src="Todo Bien.mp3" preload="auto" loop></audio>
+
+    <!-- Efecto de niebla tétrica -->
+    <div id="fog-effect" class="fog-container"></div>
+
+    <!-- Contenedor de partículas flotantes dinámicas -->
+    <div id="particles-container" class="absolute inset-0 overflow-hidden pointer-events-none z-0"></div>
+
+    <!-- Título superior dinámico -->
+    <div id="header-title" class="text-center mb-8 z-10 transition-all duration-700">
+        <span id="badge-text" class="inline-block px-4 py-1.5 rounded-full bg-purple-950/80 border border-purple-700/50 text-purple-300 text-xs font-semibold uppercase tracking-widest mb-3 shadow-lg transition-all duration-1000">
+            <i id="badge-icon" class="fa-solid fa-ghost mr-1.5 text-purple-400 animate-bounce"></i> ¿Te atreves a abrirlo?
+        </span>
+        <h1 id="main-title" class="font-spooky text-4xl md:text-6xl text-purple-400 tracking-wider spooky-text transition-all duration-1000">
+            Un Mensaje Oscuro...
+        </h1>
+        <p id="main-subtitle" class="text-gray-400 text-sm md:text-base mt-2 font-light transition-all duration-1000">
+            Alguien ha dejado un secreto envuelto en sombras para ti. Toca para romper el hechizo.
+        </p>
+    </div>
+
+    <!-- Sección del Sobre -->
+    <div id="envelope-section" class="envelope-container z-10 mb-6 transition-all duration-700">
+        <div class="envelope mx-auto" onclick="openLetter()">
+            <!-- Tapa superior del sobre -->
+            <div class="envelope-flap"></div>
+            
+            <!-- Bolsillo del sobre -->
+            <div class="envelope-pocket"></div>
+
+            <!-- Sello interactivo -->
+            <div id="seal-button" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 bg-purple-900 text-purple-300 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl border-2 border-purple-500 hover:scale-110 transition-all duration-700">
+                <i id="seal-icon" class="fa-solid fa-skull text-xl transition-all duration-500"></i>
+            </div>
+
+            <!-- Texto de instrucción en el sobre -->
+            <div class="absolute bottom-4 left-0 right-0 text-center z-20">
+                <span id="envelope-hint" class="text-xs font-medium text-purple-300 bg-purple-950/80 px-3 py-1 rounded-full border border-purple-800/50 shadow-md transition-all duration-700">
+                    Abre si te atreves... 🕷️
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección de la Carta Abierta -->
+    <div id="letter-section" class="hidden w-full max-w-xl z-10 opacity-0 transition-all duration-1000 transform scale-95">
+        <div class="letter-paper rounded-2xl p-6 md:p-8 relative">
+            <!-- Botón para cerrar -->
+            <button onclick="closeLetter()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-sm bg-white/80 p-2 rounded-full shadow-sm transition" title="Volver al inicio">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <!-- Encabezado dulce de la carta -->
+            <div class="border-b border-rose-100 pb-4 mb-6">
+                <p class="font-serif text-sm text-amber-600 italic">No había ningún fantasma, solo...</p>
+                <h2 class="font-serif text-2xl md:text-3xl font-bold text-gray-800 mt-1">¡Mi aprecio x ti! ✨💖</h2>
+            </div>
+
+            <!-- Mensaje romántico -->
+            <div class="font-serif text-gray-700 space-y-4 text-base leading-relaxed">
+                <p>
+                    Perdón por el susto inicial, pero quería recordarte que incluso en la oscuridad más profunda, "tú eres la luz más hermosa que ilumina el mundo de los que te rodean".
+                </p>
+                <p>
+                    No hay ningún misterio terrorífico aquí, solo una persona completamente orgullosa de ti, de tu sonrisa y de la magia inolvidable que traes a miles de vidas cada día.
+                </p>
+            </div>
+
+            <!-- Tarjeta con Marco Estilo Instagram -->
+            <div class="my-6 bg-white rounded-xl shadow-md border border-rose-100 overflow-hidden font-sans">
+                <!-- Encabezado del Post -->
+                <div class="flex items-center justify-between p-3 border-b border-gray-100">
+                    <div class="flex items-center space-x-2.5">
+                        <div class="w-8 h-8 rounded-full p-[2px] ig-story-border">
+                            <img src="ig.jpg" class="w-full h-full rounded-full object-cover border border-white" alt="Avatar">
+                        </div>
+                        <div>
+                            <p class="text-xs font-semibold text-gray-800 leading-none">cielo_hi43</p>
+                            <p class="text-[10px] text-gray-400 leading-none mt-1">Italia</p>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-ellipsis text-gray-400 text-sm"></i>
+                </div>
+
+                <!-- Imagen del Post (Puedes cambiar la URL en el 'src') -->
+                <div class="relative group aspect-square bg-gray-100 overflow-hidden">
+                    <img id="ig-image" src="cielo.jpg" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Foto de Instagram">
+                </div>
+
+                <!-- Botones de Interacción -->
+                <div class="p-3">
+                    <div class="flex items-center justify-between text-lg text-gray-700 mb-2">
+                        <div class="flex items-center space-x-3">
+                            <i class="fa-solid fa-heart text-rose-500 cursor-pointer animate-pulse"></i>
+                            <i class="fa-regular fa-comment cursor-pointer hover:text-gray-500"></i>
+                            <i class="fa-regular fa-paper-plane cursor-pointer hover:text-gray-500"></i>
+                        </div>
+                        <i class="fa-regular fa-bookmark cursor-pointer hover:text-gray-500"></i>
+                    </div>
+
+                    <!-- Contador de Likes y Caption -->
+                    <p class="text-xs font-semibold text-gray-800">Les gusta a <span class="font-bold">ti_y_a_mi</span> e infinitas personas más</p>
+                    <p class="text-xs text-gray-700 mt-1">
+                        <span class="font-semibold text-gray-800 mr-1">rdflstrdlv</span>
+                        El mejor capítulo de mi vida es el día en que te conocí. 💖✨
+                    </p>
+                </div>
+            </div>
+
+            <div class="font-serif text-gray-700 space-y-3 text-base leading-relaxed">
+                <p class="italic text-rose-600 font-semibold text-center my-2">
+                    "Ni los hechizos ni los fantasmas se comparan con la magia y Esencia que desprendes."
+                </p>
+                <p>
+                    Gracias por ser una persona tan especial, que aun despues del tiempo suele mandarme mensajes y chistes te aprecio mucho.
+                </p>
+                <p>
+                    perdon por la cancion, pero es un cancion muy bonita, tan especial es para mi que te la dejo para que sepas que aun que no seamos constantes siempre me animas con videos y cosas randoms que mandas y que todos estamos orgullosos de ti, so TQM y Cuidate mucho.
+                </p>
+            </div>
+
+            <!-- Pie de carta con controles de audio -->
+            <div class="mt-6 pt-4 border-t border-rose-100 flex flex-wrap justify-between items-center gap-4">
+                <div>
+                    <p class="font-serif italic text-gray-500 text-sm">Con todo mi corazón,</p>
+                    <p class="font-serif font-bold text-gray-800 text-base">El Extraño DE MEXICO 🌹</p>
+                </div>
+                
+                <!-- Botón de control de música -->
+                <div class="flex items-center space-x-2 bg-white/90 px-4 py-2 rounded-full shadow-md border border-rose-200">
+                    <button id="music-toggle" onclick="toggleMusic()" class="text-rose-600 hover:scale-105 transition flex items-center space-x-2 text-xs font-semibold">
+                        <i id="music-icon" class="fa-solid fa-music text-rose-500"></i>
+                        <span id="music-text">Pausar Música</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botón para cerrar y volver al modo misterioso -->
+        <div class="text-center mt-6">
+            <button onclick="resetEnvelope()" class="text-xs text-gray-600 hover:text-gray-900 bg-white/80 px-4 py-2 rounded-full shadow-sm border border-gray-200 transition">
+                <i class="fa-solid fa-rotate-left mr-1"></i> Guardar la carta de nuevo
+            </button>
+        </div>
+    </div>
+
+    <!-- Sintetizador Spooky Web Audio API & Control de Audio -->
+    <script>
+        let audioCtx = null;
+        let isSpookyPlaying = false;
+        let spookyInterval = null;
+        let currentMode = 'spooky';
+
+        const cancionRomantica = document.getElementById('cancionRomantica');
+        const spookyNotes = [220.00, 233.08, 196.00, 207.65, 174.61, 164.81]; // Frecuencias disonantes
+        let noteIndex = 0;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        // Tono misterioso sintético para la intro
+        function playSpookyTone(frequency) {
+            if (!audioCtx || !isSpookyPlaying) return;
+
+            try {
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+
+                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.06, audioCtx.currentTime + 0.3);
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.2);
+
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                osc.start();
+                osc.stop(audioCtx.currentTime + 1.2);
+            } catch (e) {
+                console.log("Error de audio:", e);
+            }
+        }
+
+        function startSpookyMusic() {
+            initAudio();
+            stopSpookyMusic();
+            isSpookyPlaying = true;
+            noteIndex = 0;
+
+            spookyInterval = setInterval(() => {
+                if (!isSpookyPlaying) return;
+                playSpookyTone(spookyNotes[noteIndex]);
+                noteIndex = (noteIndex + 1) % spookyNotes.length;
+            }, 900);
+        }
+
+        function stopSpookyMusic() {
+            isSpookyPlaying = false;
+            if (spookyInterval) {
+                clearInterval(spookyInterval);
+                spookyInterval = null;
+            }
+        }
+
+        // Iniciar música tétrica al interactuar por primera vez
+        document.body.addEventListener('click', function startAmbient() {
+            if (currentMode === 'spooky' && !isSpookyPlaying) {
+                startSpookyMusic();
+            }
+            document.body.removeEventListener('click', startAmbient);
+        }, { once: true });
+
+        // Controles de pausa/reproducción para "Todo Bien.mp3"
+        function toggleMusic() {
+            const icon = document.getElementById('music-icon');
+            const text = document.getElementById('music-text');
+
+            if (!cancionRomantica.paused) {
+                cancionRomantica.pause();
+                icon.className = "fa-solid fa-volume-xmark text-gray-400";
+                text.innerText = "Reproducir Música";
+            } else {
+                cancionRomantica.play().catch(e => console.log("Bloqueado:", e));
+                icon.className = "fa-solid fa-music text-rose-500";
+                text.innerText = "Pausar Música";
+            }
+        }
+
+        // Abrir la carta
+        function openLetter() {
+            const envelope = document.querySelector('.envelope');
+            const envelopeSection = document.getElementById('envelope-section');
+            const letterSection = document.getElementById('letter-section');
+            const headerTitle = document.getElementById('header-title');
+            const body = document.body;
+            const fog = document.getElementById('fog-effect');
+
+            envelope.classList.add('open');
+
+            // 1. Apagar sintetizador spooky e iniciar "Todo Bien.mp3"
+            stopSpookyMusic();
+            cancionRomantica.currentTime = 0;
+            cancionRomantica.play().catch(e => console.log("Error al reproducir audio:", e));
+
+            // 2. Cambiar tema a romántico
+            currentMode = 'romantic';
+            body.classList.remove('theme-spooky');
+            body.classList.add('theme-romantic');
+            fog.style.opacity = '0';
+
+            // 3. Modificar textos e iconos
+            document.getElementById('seal-button').className = "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 bg-rose-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg border-2 border-amber-300 hover:scale-110 transition-all duration-700";
+            document.getElementById('seal-icon').className = "fa-solid fa-heart text-xl animate-pulse";
+            
+            document.getElementById('badge-text').className = "inline-block px-4 py-1.5 rounded-full bg-white/80 border border-amber-300/60 text-rose-600 text-xs font-semibold uppercase tracking-widest mb-3 shadow-sm transition-all duration-1000";
+            document.getElementById('badge-icon').className = "fa-solid fa-sparkles mr-1.5 text-rose-500";
+            document.getElementById('badge-text').childNodes[2].nodeValue = " Sorpresa Especial";
+
+            const mainTitle = document.getElementById('main-title');
+            mainTitle.className = "font-serif text-3xl md:text-5xl font-bold text-gray-800 tracking-tight transition-all duration-1000";
+            mainTitle.classList.remove('spooky-text');
+            mainTitle.innerText = "¡Una Sorpresa Para Ti!";
+
+            document.getElementById('main-subtitle').className = "text-gray-600 text-sm md:text-base mt-2 font-light transition-all duration-1000";
+            document.getElementById('main-subtitle').innerText = "Todo lo misterioso ha desaparecido...";
+
+            // 4. Cambiar partículas y mostrar carta
+            updateParticles();
+
+            setTimeout(() => {
+                envelopeSection.style.opacity = '0';
+                envelopeSection.style.transform = 'scale(0.8)';
+                headerTitle.style.opacity = '0';
+                headerTitle.style.transform = 'translateY(-20px)';
+
+                setTimeout(() => {
+                    envelopeSection.classList.add('hidden');
+                    headerTitle.classList.add('hidden');
+
+                    letterSection.classList.remove('hidden');
+                    setTimeout(() => {
+                        letterSection.style.opacity = '1';
+                        letterSection.style.transform = 'scale(1)';
+                    }, 50);
+                }, 400);
+            }, 700);
+        }
+
+        function closeLetter() {
+            const letterSection = document.getElementById('letter-section');
+            const envelopeSection = document.getElementById('envelope-section');
+            const headerTitle = document.getElementById('header-title');
+            const body = document.body;
+            const envelope = document.querySelector('.envelope');
+            const fog = document.getElementById('fog-effect');
+
+            cancionRomantica.pause();
+
+            letterSection.style.opacity = '0';
+            letterSection.style.transform = 'scale(0.95)';
+
+            setTimeout(() => {
+                letterSection.classList.add('hidden');
+
+                // Regresar al modo tétrico
+                currentMode = 'spooky';
+                body.classList.remove('theme-romantic');
+                body.classList.add('theme-spooky');
+                fog.style.opacity = '1';
+
+                // Restaurar textos y sintetizador
+                document.getElementById('seal-button').className = "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 bg-purple-900 text-purple-300 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl border-2 border-purple-500 hover:scale-110 transition-all duration-700";
+                document.getElementById('seal-icon').className = "fa-solid fa-skull text-xl";
+
+                document.getElementById('badge-text').className = "inline-block px-4 py-1.5 rounded-full bg-purple-950/80 border border-purple-700/50 text-purple-300 text-xs font-semibold uppercase tracking-widest mb-3 shadow-lg transition-all duration-1000";
+                document.getElementById('badge-icon').className = "fa-solid fa-ghost mr-1.5 text-purple-400 animate-bounce";
+                document.getElementById('badge-text').childNodes[2].nodeValue = " ¿Te atreves a abrirlo?";
+
+                const mainTitle = document.getElementById('main-title');
+                mainTitle.className = "font-spooky text-4xl md:text-6xl text-purple-400 tracking-wider spooky-text transition-all duration-1000";
+                mainTitle.innerText = "Un Mensaje Oscuro...";
+
+                document.getElementById('main-subtitle').className = "text-gray-400 text-sm md:text-base mt-2 font-light transition-all duration-1000";
+                document.getElementById('main-subtitle').innerText = "Alguien ha dejado un secreto envuelto en sombras para ti. Toca para romper el hechizo.";
+
+                startSpookyMusic();
+                updateParticles();
+
+                envelopeSection.classList.remove('hidden');
+                headerTitle.classList.remove('hidden');
+
+                setTimeout(() => {
+                    envelopeSection.style.opacity = '1';
+                    envelopeSection.style.transform = 'scale(1)';
+                    headerTitle.style.opacity = '1';
+                    headerTitle.style.transform = 'translateY(0)';
+                    envelope.classList.remove('open');
+                }, 50);
+            }, 400);
+        }
+
+        function resetEnvelope() {
+            closeLetter();
+        }
+
+        // Sistema de Partículas
+        let particleInterval = null;
+
+        function updateParticles() {
+            const container = document.getElementById('particles-container');
+            container.innerHTML = '';
+
+            if (particleInterval) clearInterval(particleInterval);
+
+            particleInterval = setInterval(() => {
+                const particle = document.createElement('div');
+                particle.className = 'floating-particle';
+
+                if (currentMode === 'spooky') {
+                    const icons = ['fa-ghost', 'fa-crow', 'fa-spider', 'fa-moon'];
+                    const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+                    particle.innerHTML = `<i class="fa-solid ${randomIcon}"></i>`;
+                    particle.style.color = 'rgba(168, 85, 247, 0.25)';
+                } else {
+                    const icons = ['fa-heart', 'fa-sparkles', 'fa-star'];
+                    const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+                    particle.innerHTML = `<i class="fa-solid ${randomIcon}"></i>`;
+                    particle.style.color = 'rgba(230, 57, 70, 0.4)';
+                }
+
+                particle.style.left = Math.random() * window.innerWidth + 'px';
+                const randomSize = Math.random() * 16 + 12;
+                particle.style.fontSize = randomSize + 'px';
+
+                const duration = Math.random() * 4 + 4;
+                particle.style.animationDuration = duration + 's';
+
+                container.appendChild(particle);
+
+                setTimeout(() => {
+                    particle.remove();
+                }, duration * 1000);
+            }, 500);
+        }
+
+        window.onload = function() {
+            updateParticles();
+        };
+    </script>
 </body>
 </html>
